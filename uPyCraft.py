@@ -29,10 +29,11 @@ import codecs
 import socket
 import ctypes
 import pyflakes
+import Esp
 from urllib import request
 from pyflakes.api import checkPath as pyflakesSyntaxCheck
 
-sys.path.append('~/opt/uPyCraft')
+sys.path.append('~/.uPyCraft')
 
 from graphicsInterface          import saveUntitled, createBoardNewDirName, findReplaceText, \
                                                 SerialWidget, LanLocWidget, Preferences, treeRightClickRename
@@ -51,18 +52,18 @@ nowIDEVersion      ="1.1"
 isCheckFirmware    =False
 rootDirectoryPath  =os.path.expanduser("~")
 rootDirectoryPath  =rootDirectoryPath.replace("\\","/")
-currentTempPath    ="%s/opt/uPyCraft/temp/"%rootDirectoryPath
-currentExamplesPath="%s/opt/uPyCraft/examples/"%rootDirectoryPath
+currentTempPath    ="%s/.uPyCraft/temp/"%rootDirectoryPath
+currentExamplesPath="%s/.uPyCraft/examples/"%rootDirectoryPath
 print(rootDirectoryPath)
 print(currentTempPath)
 print(currentExamplesPath)
 
-if not os.path.exists("%s/opt/uPyCraft"%rootDirectoryPath):
-    os.makedirs("%s/opt/uPyCraft"%rootDirectoryPath)
-if not os.path.exists("%s/opt/uPyCraft/download"%rootDirectoryPath):
-    os.makedirs("%s/opt/uPyCraft/download"%rootDirectoryPath)
-if not os.path.exists("%s/opt/uPyCraft/temp"%rootDirectoryPath):
-    os.makedirs("%s/opt/uPyCraft/temp"%rootDirectoryPath)
+if not os.path.exists("%s/.uPyCraft"%rootDirectoryPath):
+    os.makedirs("%s/.uPyCraft"%rootDirectoryPath)
+if not os.path.exists("%s/.uPyCraft/download"%rootDirectoryPath):
+    os.makedirs("%s/.uPyCraft/download"%rootDirectoryPath)
+if not os.path.exists("%s/.uPyCraft/temp"%rootDirectoryPath):
+    os.makedirs("%s/.uPyCraft/temp"%rootDirectoryPath)
 
 EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1,\
                    pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image,\
@@ -111,7 +112,7 @@ class MainWidget(QMainWindow):
 
         self.setWindowTitle("uPyCraft V%s"%nowIDEVersion)
         self.setWindowIcon(QIcon(':/logo.png'))
-        self.resize(1000,800)
+        self.resize(1200,800)
         self.setFont()
         self.setIconSize(QSize(36,36))
 
@@ -123,7 +124,7 @@ class MainWidget(QMainWindow):
         self.myDefaultProgram=""
         self.checkDefaultProgram=""
         self.cutCopyPasteMsg=""
-        self.currentBoard="esp32"
+        self.currentBoard="esp8266"
         self.workspacePath=""
         self.canNotIdentifyBoard=False
 
@@ -138,6 +139,7 @@ class MainWidget(QMainWindow):
 #tree
         self.tree=None
         self.createTree()
+        self.tree.resize(500,0)
 #lexer
         self.lexer=None
         self.createLexer()
@@ -276,6 +278,7 @@ class MainWidget(QMainWindow):
 
     def createTree(self):
         self.tree=myTreeView(self)
+        
         #self.connect(self.tree,SIGNAL("doubleClicked(QModelIndex)"),self.slotTreeDoubleClickOpenFile)
         self.tree.doubleClicked.connect(self.slotTreeDoubleClickOpenFile)
 
@@ -328,7 +331,7 @@ class MainWidget(QMainWindow):
 
         #self.connect(self.terminal,SIGNAL("sig_cursorPositionChanged()"),self.slotTerminalCursorChanged)
         #self.connect(self.terminal,SIGNAL("sig_setCursor"),self.slotTerminalSetCursor)
-        self.terminal.sig_cursorPositionChanged.connect(self.slotTerminalCursorChanged)
+        self.terminal.cursorPositionChanged.connect(self.slotTerminalCursorChanged)
         self.terminal.sig_setCursor.connect(self.slotTerminalSetCursor)
 
     def createTabWidget(self):
@@ -798,13 +801,13 @@ class MainWidget(QMainWindow):
         self.PCboardList=[]
 
         if self.currentBoard=="esp32":
-            self.getPCcommonExamples("%s/opt/uPyCraft/examples/Common"%rootDirectoryPath)
-            self.getPCboardExamples("%s/opt/uPyCraft/examples/Boards/ESP32"%rootDirectoryPath)
+            self.getPCcommonExamples("%s/.uPyCraft/examples/Common"%rootDirectoryPath)
+            self.getPCboardExamples("%s/.uPyCraft/examples/Boards/ESP32"%rootDirectoryPath)
             for filename in self.PCboardList:
                 if filename in self.PCcommonList:
                     self.PCcommonList.remove(filename)
 
-            self.getPCexamples("%s/opt/uPyCraft/examples/Boards/ESP32"%rootDirectoryPath,self.exampleMenu)
+            self.getPCexamples("%s/.uPyCraft/examples/Boards/ESP32"%rootDirectoryPath,self.exampleMenu)
 
             menuTitle=[]
 
@@ -825,13 +828,13 @@ class MainWidget(QMainWindow):
                     menuTitle.append(adirList[1])
 
         elif self.currentBoard=="esp8266":
-            self.getPCcommonExamples("%s/opt/uPyCraft/examples/Common"%rootDirectoryPath)
-            self.getPCboardExamples("%s/opt/uPyCraft/examples/Boards/ESP8266"%rootDirectoryPath)
+            self.getPCcommonExamples("%s/.uPyCraft/examples/Common"%rootDirectoryPath)
+            self.getPCboardExamples("%s/.uPyCraft/examples/Boards/ESP8266"%rootDirectoryPath)
             for filename in self.PCboardList:
                 if filename in self.PCcommonList:
                     self.PCcommonList.remove(filename)
 
-            self.getPCexamples("%s/opt/uPyCraft/examples/Boards/ESP8266"%rootDirectoryPath,self.exampleMenu)
+            self.getPCexamples("%s/.uPyCraft/examples/Boards/ESP8266"%rootDirectoryPath,self.exampleMenu)
             menuTitle=[]
             for i in self.exampleMenu.findChildren(QMenu):
                 menuTitle.append(i.title())
@@ -848,11 +851,11 @@ class MainWidget(QMainWindow):
                     menuTitle.append(adirList[1])
 
         elif self.currentBoard=="pyboard":
-            self.getPCboardExamples("%s/opt/uPyCraft/examples/Boards/pyboard"%rootDirectoryPath)
+            self.getPCboardExamples("%s/.uPyCraft/examples/Boards/pyboard"%rootDirectoryPath)
             for filename in self.PCboardList:
                 if filename in self.PCcommonList:
                     self.PCcommonList.remove(filename)
-            self.getPCexamples("%s/opt/uPyCraft/examples/Boards/pyboard"%rootDirectoryPath,self.exampleMenu)
+            self.getPCexamples("%s/.uPyCraft/examples/Boards/pyboard"%rootDirectoryPath,self.exampleMenu)
             menuTitle=[]
             for i in self.exampleMenu.findChildren(QMenu):
                 menuTitle.append(i.title())
@@ -869,11 +872,11 @@ class MainWidget(QMainWindow):
                     menuTitle.append(adirList[1])
 
         elif self.currentBoard=="TPYBoardV202":
-            self.getPCboardExamples("%s/opt/uPyCraft/examples/Boards/TPYBoardV202"%rootDirectoryPath)
+            self.getPCboardExamples("%s/.uPyCraft/examples/Boards/TPYBoardV202"%rootDirectoryPath)
             for filename in self.PCboardList:
                 if filename in self.PCcommonList:
                     self.PCcommonList.remove(filename)
-            self.getPCexamples("%s/opt/uPyCraft/examples/Boards/TPYBoardV202"%rootDirectoryPath,self.exampleMenu)
+            self.getPCexamples("%s/.uPyCraft/examples/Boards/TPYBoardV202"%rootDirectoryPath,self.exampleMenu)
             menuTitle=[]
             for i in self.exampleMenu.findChildren(QMenu):
                 menuTitle.append(i.title())
@@ -890,11 +893,11 @@ class MainWidget(QMainWindow):
                     menuTitle.append(adirList[1])
 
         elif self.currentBoard=="TPYBoardV102":
-            self.getPCboardExamples("%s/opt/uPyCraft/examples/Boards/TPYBoardV102"%rootDirectoryPath)
+            self.getPCboardExamples("%s/.uPyCraft/examples/Boards/TPYBoardV102"%rootDirectoryPath)
             for filename in self.PCboardList:
                 if filename in self.PCcommonList:
                     self.PCcommonList.remove(filename)
-            self.getPCexamples("%s/opt/uPyCraft/examples/Boards/TPYBoardV102"%rootDirectoryPath,self.exampleMenu)
+            self.getPCexamples("%s/.uPyCraft/examples/Boards/TPYBoardV102"%rootDirectoryPath,self.exampleMenu)
             menuTitle=[]
             for i in self.exampleMenu.findChildren(QMenu):
                 menuTitle.append(i.title())
@@ -911,12 +914,12 @@ class MainWidget(QMainWindow):
                     menuTitle.append(adirList[1])
 
         elif self.currentBoard=="microbit":
-            self.getPCboardExamples("%s/opt/uPyCraft/examples/Boards/microbit"%rootDirectoryPath)
+            self.getPCboardExamples("%s/.uPyCraft/examples/Boards/microbit"%rootDirectoryPath)
             for filename in self.PCboardList:
                 if filename in self.PCcommonList:
                     self.PCcommonList.remove(filename)
 
-            self.getPCexamples("%s/opt/uPyCraft/examples/Boards/microbit"%rootDirectoryPath,self.exampleMenu)
+            self.getPCexamples("%s/.uPyCraft/examples/Boards/microbit"%rootDirectoryPath,self.exampleMenu)
 
             menuTitle=[]
             for i in self.exampleMenu.findChildren(QMenu):
@@ -935,11 +938,11 @@ class MainWidget(QMainWindow):
                     menuTitle.append(adirList[1])
 
         elif self.currentBoard=="OpenMV_M4":
-            self.getPCboardExamples("%s/opt/uPyCraft/examples/Boards/OpenMV_M4"%rootDirectoryPath)
+            self.getPCboardExamples("%s/.uPyCraft/examples/Boards/OpenMV_M4"%rootDirectoryPath)
             for filename in self.PCboardList:
                 if filename in self.PCcommonList:
                     self.PCcommonList.remove(filename)
-            self.getPCexamples("%s/opt/uPyCraft/examples/Boards/OpenMV_M4"%rootDirectoryPath,self.exampleMenu)
+            self.getPCexamples("%s/.uPyCraft/examples/Boards/OpenMV_M4"%rootDirectoryPath,self.exampleMenu)
             menuTitle=[]
             for i in self.exampleMenu.findChildren(QMenu):
                 menuTitle.append(i.title())
@@ -956,11 +959,11 @@ class MainWidget(QMainWindow):
                     menuTitle.append(adirList[1])
 
         elif self.currentBoard=="OpenMV_H7":
-            self.getPCboardExamples("%s/opt/uPyCraft/examples/Boards/OpenMV_H7"%rootDirectoryPath)
+            self.getPCboardExamples("%s/.uPyCraft/examples/Boards/OpenMV_H7"%rootDirectoryPath)
             for filename in self.PCboardList:
                 if filename in self.PCcommonList:
                     self.PCcommonList.remove(filename)
-            self.getPCexamples("%s/opt/uPyCraft/examples/Boards/OpenMV_H7"%rootDirectoryPath,self.exampleMenu)
+            self.getPCexamples("%s/.uPyCraft/examples/Boards/OpenMV_H7"%rootDirectoryPath,self.exampleMenu)
             menuTitle=[]
             for i in self.exampleMenu.findChildren(QMenu):
                 menuTitle.append(i.title())
@@ -982,9 +985,9 @@ class MainWidget(QMainWindow):
         self.exampleTools.setMenu(self.exampleMenu)
 
     def createUpyLibMenu(self):
-        if not os.path.exists("%s/opt/uPyCraft/examples/uPy_lib"%rootDirectoryPath):
+        if not os.path.exists("%s/.uPyCraft/examples/uPy_lib"%rootDirectoryPath):
             return
-        uPyLibPath="%s/opt/uPyCraft/examples/uPy_lib"%rootDirectoryPath
+        uPyLibPath="%s/.uPyCraft/examples/uPy_lib"%rootDirectoryPath
         row=self.rootLib.rowCount()     #clear board treemodel
         self.rootLib.removeRows(0,row)  #use for refresh treemodel,these two lines
 
@@ -1019,7 +1022,7 @@ class MainWidget(QMainWindow):
                 pass
             
             print("Creating symbolic link in %s"%rootDirectoryPath)
-            symbolicLink="%s/opt/uPyCraft/workSpace"%rootDirectoryPath
+            symbolicLink="%s/.uPyCraft/workSpace"%rootDirectoryPath
             print("symbolicLink: %s"%symbolicLink)
             if os.path.exists(symbolicLink):
                 if os.path.islink(symbolicLink):
@@ -1027,15 +1030,15 @@ class MainWidget(QMainWindow):
             os.symlink(self.workspacePath,symbolicLink)
             self.workspacePath=symbolicLink
             
-            if os.path.exists("%s/opt/uPyCraft/config.json"%rootDirectoryPath):
-                configfile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+            if os.path.exists("%s/.uPyCraft/config.json"%rootDirectoryPath):
+                configfile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
                 mymsg=configfile.read()
                 configfile.close()
                 jsonDict=eval(mymsg)
 
                 jsonDict['workSpace']=str(self.workspacePath)
                 jsonMsg=str(jsonDict)
-                configfile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+                configfile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
                 configfile.write(jsonMsg)
                 configfile.close()
 
@@ -1062,8 +1065,8 @@ class MainWidget(QMainWindow):
         path=os.getcwd()
         path=path.replace("\\","/")
 
-        if not os.path.exists("%s/opt/uPyCraft/config.json"%rootDirectoryPath):
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+        if not os.path.exists("%s/.uPyCraft/config.json"%rootDirectoryPath):
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
             configFile.write("{'serial':'/dev/ttyUSB0',\
                          'updateURL':'https://git.oschina.net/dfrobot/upycraft/raw/master/uPyCraft.json',\
                          'checkFirmware':'check update',\
@@ -1071,7 +1074,7 @@ class MainWidget(QMainWindow):
                          'workSpace':'%s'}"%(path+"/workSpace"))
             configFile.close()
 
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'rU')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'rU')
             configMsg=configFile.read()
             configFile.close()
 
@@ -1079,11 +1082,11 @@ class MainWidget(QMainWindow):
                 jsonDict=eval(configMsg)
             except:
                 QMessageBox.information(self,self.tr("attention"),self.tr("Please put the uPy_Craft and workSpace into non-Chinese dir."),QMessageBox.Ok)
-                os.remove("%s/opt/uPyCraft/config.json"%rootDirectoryPath)
+                os.remove("%s/.uPyCraft/config.json"%rootDirectoryPath)
                 return False
             self.workspacePath=path+"/workSpace"
         else:
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'rU')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'rU')
             configMsg=configFile.read()
             configFile.close()
 
@@ -1091,7 +1094,7 @@ class MainWidget(QMainWindow):
                 jsonDict=eval(configMsg)
             except:
                 QMessageBox.information(self,self.tr("attention"),self.tr("Please put the uPy_Craft and workSpace into non-Chinese dir."),QMessageBox.Ok)
-                os.remove("%s/opt/uPyCraft/config.json"%rootDirectoryPath)
+                os.remove("%s/.uPyCraft/config.json"%rootDirectoryPath)
                 return False
 
             if jsonDict.get("workSpace") != None:
@@ -1104,7 +1107,7 @@ class MainWidget(QMainWindow):
                jsonDict.get('checkFirmware')==None or \
                jsonDict.get('address')==None or \
                jsonDict.get('workSpace')==None:
-                configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+                configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
                 configFile.write("{'serial':'None','updateURL':'https://git.oschina.net/dfrobot/upycraft/raw/master/uPyCraft.json',\
                             'checkFirmware':'check update','address':'China Mainland','workSpace':'%s'}"%self.workspacePath)
                 configFile.close()
@@ -1155,6 +1158,7 @@ class MainWidget(QMainWindow):
         self.tabWidget.createNewTab("untitled","",self.lexer)
 
     def slotSaveFile(self):
+        print("slotSaveFile")
         if self.tabWidget.currentWidget() is None:
             print("slotSaveFile none file")
             return
@@ -1167,9 +1171,10 @@ class MainWidget(QMainWindow):
         else:
             tabname = self.tabWidget.tabText(self.tabWidget.currentIndex())
             filepath = self.tabWidget.tabToolTip(self.tabWidget.currentIndex())
-            print(tabname)
-            print(filepath)
-            if tabname[0] != "*":#tabname have *,means it's changed,can be save
+            print("Tab name: %s"%tabname)
+            print("File path: %s"%filepath)
+            if tabname[0] != "*": #tabname have *,means it's changed,can be save
+                print("tab not changed")
                 return
             elif sys.platform=="linux" and filepath.find(rootDirectoryPath)<0:
                 savefile=codecs.open(currentTempPath+str(filepath),'wb')
@@ -1190,6 +1195,7 @@ class MainWidget(QMainWindow):
 
             if type(self.saveStr) is bytes:
                 self.saveStr=self.saveStr.decode('utf-8')
+            print("Writing %s"%self.saveStr.encode('utf-8'))
             savefile.write(self.saveStr.encode('utf-8'))
             savefile.close()
             self.tabWidget.setTabText(self.tabWidget.currentIndex(),tabname[1:])
@@ -1364,7 +1370,7 @@ class MainWidget(QMainWindow):
         self.tabWidget.currentWidget().markerDeleteAll()
         #self.tabWidget.currentWidget().setMarkerBackgroundColor(QColor(255,0,0))
 
-        syntaxCheckFilePath="%s/opt/uPyCraft/temp/syntaxCheck.py"%rootDirectoryPath
+        syntaxCheckFilePath="%s/.uPyCraft/temp/syntaxCheck.py"%rootDirectoryPath
         syntaxCheckFileText=self.tabWidget.currentWidget().text()
         print("SyntaxCheck on file %s"%syntaxCheckFilePath)
         filehandle=open(syntaxCheckFilePath,"wb")
@@ -1403,8 +1409,8 @@ class MainWidget(QMainWindow):
         print("File handle closed")
         backStdout=sys.stdout
         backStderr=sys.stderr
-        stdoutFilePath="%s/opt/uPyCraft/temp/stdout.py"%rootDirectoryPath
-        stderrFilePath="%s/opt/uPyCraft/temp/stderr.py"%rootDirectoryPath
+        stdoutFilePath="%s/.uPyCraft/temp/stdout.py"%rootDirectoryPath
+        stderrFilePath="%s/.uPyCraft/temp/stderr.py"%rootDirectoryPath
         stdoutFile=open(stdoutFilePath,'w')
         stderrFile=open(stderrFilePath,'w')
         sys.stdout=stdoutFile
@@ -1551,7 +1557,7 @@ class MainWidget(QMainWindow):
             self.terminal.append(str(e))
             return
 
-        configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+        configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
         configText=configFile.read()
         configFile.close()
 
@@ -1561,7 +1567,7 @@ class MainWidget(QMainWindow):
             jsonDict['serial']=action.text()
             configText=str(jsonDict)
 
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
             configFile.write(configText)
             configFile.close()
 
@@ -1670,7 +1676,7 @@ class MainWidget(QMainWindow):
             self.serialCloseToolsAction.setVisible(True)
             return
 
-        configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+        configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
         configText=configFile.read()
         configFile.close()
 
@@ -1937,11 +1943,11 @@ class MainWidget(QMainWindow):
         path=os.getcwd()
         path=path.replace("\\","/")
 
-        configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+        configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
         configFile.write("{'serial':'None','updateURL':'https://git.oschina.net/dfrobot/upycraft/raw/master/uPyCraft.json',\
                          'checkFirmware':'check update','address':'France','workSpace':'null'}")
         configFile.close()
-        configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'rU')
+        configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'rU')
         configText=configFile.read()
         configFile.close()
 
@@ -1949,7 +1955,7 @@ class MainWidget(QMainWindow):
             jsonDict=eval(configText)
         except Exception:
             QMessageBox.information(self,self.tr("attention"),self.tr("Please put the uPy_Craft and workSpace into non-Chinese dir."),QMessageBox.Ok)
-            os.remove("%s/opt/uPyCraft/config.json"%rootDirectoryPath)
+            os.remove("%s/.uPyCraft/config.json"%rootDirectoryPath)
             return
         self.workspacePath="null"
 
@@ -1964,7 +1970,7 @@ class MainWidget(QMainWindow):
         #  slotLanlocLocation
         #  slotWetherUpdateFirmware
     def slotPreferences(self):
-        configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+        configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
         configText=configFile.read()
         configFile.close()
 
@@ -1989,7 +1995,7 @@ class MainWidget(QMainWindow):
 
     def slotLanlocLocation(self,item):
         if self.preferencesDialog.landlocation.locationComboBox.currentText()=="China Mainland":
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
             configText=configFile.read()
             configFile.close()
             jsonDict=eval(configText)
@@ -1997,11 +2003,11 @@ class MainWidget(QMainWindow):
             jsonDict['updateURL']="https://git.oschina.net/dfrobot/upycraft/raw/master/uPyCraft.json"
             jsonDict['address']="China Mainland"
             configText=str(jsonDict)
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
             configFile.write(configText)
             configFile.close()
         else:
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
             configText=configFile.read()
             configFile.close()
             jsonDict=eval(configText)
@@ -2009,39 +2015,49 @@ class MainWidget(QMainWindow):
             jsonDict['updateURL']="https://github.com/DFRobot/uPyCraft/raw/master/uPyCraft.json"
             jsonDict['address']="others"
             configText=str(jsonDict)
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
             configFile.write(configText)
             configFile.close()
 
     def slotWetherUpdateFirmware(self):
         if self.preferencesDialog.configUpdate.checkBinComBox.currentText()=="check update":
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
             configText=configFile.read()
             configFile.close()
             jsonDict=eval(configText)
 
             jsonDict['checkFirmware']="check update"
             configText=str(jsonDict)
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
             configFile.write(configText)
             configFile.close()
         else:
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
             configText=configFile.read()
             configFile.close()
             jsonDict=eval(configText)
 
             jsonDict['checkFirmware']="no check"
             configText=str(jsonDict)
-            configFile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'w')
+            configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'w')
             configFile.write(configText)
             configFile.close()
 
     def slotAbout(self):
-        if self.preferencesDialog.landlocation.locationComboBox.currentText()=="China Mainland":
+        configFile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
+        configText=configFile.read()
+        configFile.close()
+        jsonDict=eval(configText)
+        location=jsonDict['address']
+
+        print("Location from config file: %s"%location)
+        print("Location: %s"%self.preferencesDialog.landlocation.locationComboBox.currentText())
+        #if self.preferencesDialog.landlocation.locationComboBox.currentText()=="China Mainland":
+        if location =="China Mainland":
             webbrowser.open("http://docs.dfrobot.com.cn/upycraft",0,True)
         else:
-            webbrowser.open("http://docs.dfrobot.com/upycraft",0,True)
+            webbrowser.open("https://github.com/uraich/uPyCraft-Qt5/wiki",0,True)
+            
 
     def slotTerminalCursorChanged(self):
         if self.terminal.terminalSelect:
@@ -2324,7 +2340,7 @@ class MainWidget(QMainWindow):
         pathList=path.split("/")
         if pathList[1].find(".")>0:
             exampleAction=QAction(pathList[1],self)
-            exampleAction.setStatusTip("%s/opt/uPyCraft/examples/Common/%s"%(rootDirectoryPath,allpath))
+            exampleAction.setStatusTip("%s/.uPyCraft/examples/Common/%s"%(rootDirectoryPath,allpath))
             menu.addAction(exampleAction)
             return
         menuList=[]
@@ -2579,7 +2595,7 @@ class MainWidget(QMainWindow):
             self.canNotIdentifyBoard=False
             return
         elif self.currentBoard=="other":
-            self.bottomText.append("You choose other board,you should reconnect to serial or hardware burnt by yourself!")
+            self.bottomText.append("You choose other board, you should reconnect to serial or hardware burn by yourself!")
             self.canNotIdentifyBoard=False
             return
 
@@ -2593,17 +2609,18 @@ class MainWidget(QMainWindow):
             if boardIndex > 0:
                 self.updateBin.boardComboBox.setCurrentIndex(boardIndex)
             if self.currentBoard == "esp32":
-                microPythonBinary = '/opt/ucc/micros/esp32/micropython/ports/esp32/build/firmware.bin'
-                if os.path.exists(microPythonBinary):
-                    self.updateBin.firmwareName.setText(microPythonBinary)
-                    self.updateBin.burnAddrComboBox.setCurrentIndex(1)
-                    self.updateBin.burnAddrComboBox.setEnabled(True)
-                    self.updateBin.eraseComboBox.setCurrentIndex(0)
+                #microPythonBinary = '/opt/ucc/micros/esp32/micropython/ports/esp32/build/firmware.bin'
+                #if os.path.exists(microPythonBinary):
+                    #self.updateBin.firmwareName.setText(microPythonBinary)
+                self.updateBin.burnAddrComboBox.setCurrentIndex(1)           # set burn address to 0x1000
+                self.updateBin.burnAddrComboBox.setEnabled(True)             # enable the menu tto change the address
+                self.updateBin.eraseComboBox.setCurrentIndex(0)              # switch on erase
             elif self.currentBoard == "esp8266":
-                microPythonBinary = '/opt/ucc/micros/esp8266/micropython/ports/esp32/build/firmware-combined.bin'
-                if os.path.exists(microPythonBinary):
-                    self.updateBin.firmwareName.setText(microPythonBinary)
-                    self.updateBin.eraseComboBox.setCurrentIndex(0)                    
+                #microPythonBinary = '/opt/ucc/micros/esp8266/micropython/ports/esp32/build/firmware-combined.bin'
+                #if os.path.exists(microPythonBinary):
+                    #self.updateBin.firmwareName.setText(microPythonBinary)
+                self.updateBin.eraseComboBox.setCurrentIndex(0)                    
+                self.updateBin.eraseComboBox.setCurrentIndex(0)              # switch on erase
                 
         # self.connect(self.updateBin.okButton,SIGNAL("clicked()"),self.updateFirmwareOk)
         # self.connect(self.updateBin.chooseFirmwareButton,SIGNAL("clicked()"),self.chooseUserFirmware)
@@ -2629,10 +2646,20 @@ class MainWidget(QMainWindow):
                     self.slotCloseSerial()
 
                 print("update!")
-                if os.path.exists("%s/opt/uPyCraft/update.json"%rootDirectoryPath)==False:
+                # check which chip is connected
+                esptool=Esp.EspTool()                
+                boardRequested = str(self.updateBin.boardComboBox.currentText())
+                boardConnected=esptool.chip
+                if boardRequested=="esp32" or boardRequested=="esp8266":
+                    if boardRequested != boardConnected:
+                        self.errMesg="Wrong chip type!\nChip requested: " + boardRequested + " Chip connected: " + boardConnected
+                        QMessageBox.information(self,self.tr("attention"),
+                                                self.tr(self.errMesg),QMessageBox.Ok)
+                        return
+                if os.path.exists("%s/.uPyCraft/update.json"%rootDirectoryPath)==False:
                     self.terminal.append("hope to connect internet and restart the IDE")
                     return
-                myfile=open("%s/opt/uPyCraft/update.json"%rootDirectoryPath,"r")
+                myfile=open("%s/.uPyCraft/update.json"%rootDirectoryPath,"r")
                 page = myfile.read()
                 myfile.close()
                 #print page
@@ -2646,7 +2673,7 @@ class MainWidget(QMainWindow):
 
                 self.firmwareNameList=url.split("/")
                 self.updateSize=firmwareList[str(self.updateBin.boardComboBox.currentText())][0]["size"]
-                self.firmwareSavePath=("%s/opt/uPyCraft/download/%s"%(rootDirectoryPath,self.firmwareNameList[-1]))
+                self.firmwareSavePath=("%s/.uPyCraft/download/%s"%(rootDirectoryPath,self.firmwareNameList[-1]))
 
                 if self.updateBin.boardComboBox.currentText()=="microbit" and os.path.exists(self.firmwareSavePath):
                     self.microbitUpdate()
@@ -2660,7 +2687,7 @@ class MainWidget(QMainWindow):
                     self.updateFirmwareBar=updateNewFirmwareBar("Burn Firmware",False,True)
                 else:
                     self.updateFirmwareBar=updateNewFirmwareBar("update Firmware",False,True)
-
+                    
                 self.updateFirmwareBar.show()
 
                 self.firmwareAny=threadDownloadFirmware(url,self.updateBin.boardComboBox.currentText(),self.firmwareSavePath,self.updateFirmwareCom,\
@@ -2670,14 +2697,14 @@ class MainWidget(QMainWindow):
                 # self.connect(self.firmwareAny,SIGNAL("firmwareAnyErase"),self.firmwareAnyErase)
                 # self.connect(self.firmwareAny,SIGNAL("firmwareAnyUpdate"),self.firmwareAnyUpdate)
                 # self.connect(self.firmwareAny,SIGNAL("goMicrobitUpdate"),self.microbitUpdate)
-                self.firmwareAny.firmwareAnyDown.connect(self.firmwareAnyDown)
-                self.firmwareAny.firmwareAnyErase.connect(self.firmwareAnyErase)
-                self.firmwareAny.firmwareAnyUpdate.connect(self.firmwareAnyUpdate)
-                self.firmwareAny.goMicrobitUpdate.connect(self.microbitUpdate)
+                self.firmwareAny.sig_firmwareAnyDown.connect(self.firmwareAnyDown)
+                self.firmwareAny.sig_firmwareAnyErase.connect(self.firmwareAnyErase)
+                self.firmwareAny.sig_firmwareAnyUpdate.connect(self.firmwareAnyUpdate)
+                self.firmwareAny.sig_goMicrobitUpdate.connect(self.microbitUpdate)
                 self.firmwareAny.start()
                 return
             else:
-                self.terminal.append("hope to connect internet and try again.")
+                self.terminal.append("Please connect to the internet and try again.")
                 return
         else:
             if self.updateBin.firmwareName.text()!="":
@@ -2736,6 +2763,7 @@ class MainWidget(QMainWindow):
 
     def firmwareAnyDown(self,per):
         if per==-1:
+            print("firmwareAnyDown per=-1 closing progress bar")
             self.updateFirmwareBar.close()
             QMessageBox.information(self,self.tr("attention"),self.tr("download false."),QMessageBox.Ok)
             return
@@ -2748,11 +2776,14 @@ class MainWidget(QMainWindow):
         self.updateFirmwareBar.downloadEvent(per)
 
     def firmwareAnyUpdate(self,per):
+        print("firmwareAnyUpdate: percentage: %d"%per)
         if per==-1:
+            print("FirmwareAnyUpdate: per == -1 closing")
             self.updateFirmwareBar.close()
             QMessageBox.information(self,self.tr("attention"),self.tr("update false."),QMessageBox.Ok)
             return
         elif per==-2:#microbit
+            print("firmwareAnyUpdate per==-2 closing")
             self.updateFirmwareBar.close()
             return
 
@@ -2760,16 +2791,17 @@ class MainWidget(QMainWindow):
             per=100
             self.updateFirmwareBar.updateEvent(per)
             return
-
+        print("updating progress bar with %d"%per)
         self.updateFirmwareBar.updateEvent(per)
 
     def firmwareAnyErase(self,per):
         print("firmwareAnyErase, percentage: %d"%per)
         if per==-1:
+            print("per == -1 closing")
             self.updateFirmwareBar.close()
-            QMessageBox.information(self,self.tr("attention"),self.tr("erase false."),QMessageBox.Ok)
+            QMessageBox.information(self,self.tr("attention"),self.tr("erase failed."),QMessageBox.Ok)
             return
-        if per>=100:
+        if per>=99:
             per=100
             self.updateFirmwareBar.eraseEvent(per)
             return
@@ -2794,7 +2826,7 @@ class MainWidget(QMainWindow):
                 if self.get_fs_info(self.firmwareSavePath):
                     QMessageBox.information(self,self.tr("microbit update"),self.tr("update ok"),QMessageBox.Ok)
                 else:
-                    QMessageBox.information(self,self.tr("microbit update"),self.tr("update false"),QMessageBox.Ok)
+                    QMessageBox.information(self,self.tr("microbit update"),self.tr("update failed"),QMessageBox.Ok)
             else:
                 print("system not support.")
         else:
@@ -3000,7 +3032,7 @@ class MainWidget(QMainWindow):
             self.boardOther()
             return
 
-        myfile=open("%s/opt/uPyCraft/config.json"%rootDirectoryPath,'r')
+        myfile=open("%s/.uPyCraft/config.json"%rootDirectoryPath,'r')
         jsonMsg=myfile.read()
         myfile.close()
         jsonDict=eval(jsonMsg)

@@ -10,12 +10,12 @@ from PyQt5.Qsci import QsciScintilla, QsciScintillaBase, QsciLexerPython
 
 rootDirectoryPath  =os.path.expanduser("~")
 rootDirectoryPath  =rootDirectoryPath.replace("\\","/")
-currentExamplesPath="%s/opt/uPyCraft/examples/"%rootDirectoryPath
+currentExamplesPath="%s/.uPyCraft/examples/"%rootDirectoryPath
 
 class myTerminal(QTextEdit):
     # Modified by Pei JIA, 2018-09-13
     sig_setCursor = pyqtSignal()
-    sig_cursorPositionChanged = pyqtSignal()
+    #sig_cursorPositionChanged = pyqtSignal()
     sig_customContextMenuRequested = pyqtSignal("const QPoint&")
 
     def __init__(self, queue = None, parent = None):
@@ -55,7 +55,7 @@ class myTerminal(QTextEdit):
 
         self.ui=parent
         self.queue=queue
-        self.currentBoard="esp32"
+        self.currentBoard="esp8266"
         # self.connect(self.ui,SIGNAL("changeCurrentBoard"),self.changeBoard)
         # self.connect(self.ui,SIGNAL("initRecvdata"),self.initRecvdata)
         # self.connect(self.ui,SIGNAL("initMessycode"),self.initMessycode)
@@ -72,6 +72,7 @@ class myTerminal(QTextEdit):
         self.startPosition=0
 
         self.terminalSelect=False
+        self.ensureCursorVisible()
 
     def createTerminalRightMenu(self):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -120,9 +121,9 @@ class myTerminal(QTextEdit):
         if not self.eventFilterEnable:
             return QMainWindow.eventFilter(self,watch,event)
         if event.type()==QEvent.KeyPress:
-            #print ("event.text:%s"%(event.text()))
-            #print ("evevt.type:%d"%event.type())
-            #print (event.key())
+            print ("event.text:%s"%(event.text()))
+            print ("evevt.type:%d"%event.type())
+            print (event.key())
             self.keyPress(event)
             return True
         elif event.type()==QEvent.InputMethod:
@@ -146,7 +147,7 @@ class myTerminal(QTextEdit):
         self.messycode=b""
 
     def keyPress(self,event):
-        print("keypress")
+        print("keypress, event.text: %s"%event.text())
         if self.terminalSelect:
             self.terminalSelect=False
             self.setTextCursor(self.ui.cursor)
@@ -156,9 +157,11 @@ class myTerminal(QTextEdit):
             self.keyPressMsg="\x08"
             self.queue.put("uitouart:::%s"%self.keyPressMsg)
         elif event.key()==Qt.Key_Left:
+            print("key press: Key left")
             self.keyPressMsg='\x1b\x5b\x44'
             self.queue.put("uitouart:::%s"%self.keyPressMsg)
         elif event.key()==Qt.Key_Right:
+            print("key press: Key right")
             self.keyPressMsg='\x1b\x5b\x43'
             self.queue.put("uitouart:::%s"%self.keyPressMsg)
         elif event.key()==Qt.Key_Delete:
@@ -174,6 +177,7 @@ class myTerminal(QTextEdit):
             self.keyPressMsg="\x09"
             self.queue.put("uitouart:::%s"%self.keyPressMsg)
         elif event.text()=="":
+            print("keyPressMsg: %s"%self.keyPressMsg)
             self.keyPressMsg="else"
             return
         else:
@@ -186,12 +190,15 @@ class myTerminal(QTextEdit):
     def uiRecvFromUart(self,data):
         if data=="" or data==b'':
             return
-
+        #print("receive: %s"%data)
         if (type(data) is bytes) and (str(data).find("b'\\xe")>=0):
+            print("is bytes")
             self.keyPressMsg="else"
             self.messycode=b''
             self.isChinese=1
+        #print("keypress message: %s"%self.keyPressMsg)
         if self.isChinese==1:
+            print("is chinese")
             if type(data) is bytes:
                 try:
                     self.messycode+=data
@@ -208,10 +215,12 @@ class myTerminal(QTextEdit):
                     self.isChinese=0
                     return
             else:
+                #print("not chinese")
                 self.isChinese=0
                 self.messycode=b''
 
         if self.keyPressMsg=="\x08" and self.ui.cursor.atEnd()==True:#Backspace
+            #print("backspace and cursor at end")
             mycursor=self.textCursor()
             self.recvdata+=data
             if self.currentBoard=="microbit":
@@ -232,6 +241,7 @@ class myTerminal(QTextEdit):
                             mycursor.deletePreviousChar()
                     self.recvdata=""
         elif self.keyPressMsg=="\x08" and not self.ui.cursor.atEnd():#Backspace
+            #print("backspace and cursor not at end")
             mycursor=self.textCursor()
             self.recvdata+=data
             if self.currentBoard=="microbit":
@@ -262,6 +272,7 @@ class myTerminal(QTextEdit):
                 #else:
                 #    print("9999")
         elif self.keyPressMsg=="\x09" and not self.ui.cursor.atEnd():#debug
+            #print("keypress == 0x09")
             self.recvdata+=data
             if self.recvdata=="\x08":
                 lastLineCursorNum=self.ui.cursor.columnNumber()
@@ -301,9 +312,11 @@ class myTerminal(QTextEdit):
                     self.ui.cursor=self.textCursor()
                     self.moveCursor(QTextCursor.Left,QTextCursor.MoveAnchor)
             else:
+                #print("inserting: %s"%self.reccdata)
                 self.ui.cursor.insertText(self.recvdata)
                 self.recvdata=""
         elif self.keyPressMsg=="\x1b\x5b\x33\x7e" and not self.ui.cursor.atEnd():#Delete
+            #print("keypress msg: delete")
             self.recvdata+=data
             allMsg=self.toPlainText()
             allMsg=allMsg.split("\n")
@@ -341,16 +354,21 @@ class myTerminal(QTextEdit):
                     self.recvdata=""
                 else:
                     pass
-        elif self.keyPressMsg=="\x1b\x5b\x44":#Key_Left
+        elif self.keyPressMsg=="\x1b\x5b\x44":       #Key_Left
+            #print("Key left data: %s"%data)
             if data=="\x08":
                 self.ui.cursorLeftOrRight-=1
+                #print("cursorpos: %d"%self.ui.cursorLeftOrRight);
                 self.ui.cursor=self.textCursor()
                 self.moveCursor(QTextCursor.Left,QTextCursor.MoveAnchor)
-        elif self.keyPressMsg=="\x1b\x5b\x43":#Key_Right
+        elif self.keyPressMsg=="\x1b\x5b\x43":        #Key_Right
+            #print("Key right data: %s"%data)
             self.ui.cursorLeftOrRight+=1
+            #print("cursorpos: %d"%self.ui.cursorLeftOrRight);
             self.ui.cursor=self.textCursor()
             self.moveCursor(QTextCursor.Right, QTextCursor.MoveAnchor)
-        elif self.keyPressMsg=="\x1b\x5b\x41":#Key_Up
+        elif self.keyPressMsg=="\x1b\x5b\x41":         #Key_Up
+            #print("Key up data: %s"%data)        
             if data == "\x08":
                 myBottomMsg=self.toPlainText()
                 msgNum=self.document().lineCount()
@@ -390,7 +408,8 @@ class myTerminal(QTextEdit):
                     self.setPlainText(plainMsg)
             else:
                 self.ui.cursor.insertText(data)
-        elif self.keyPressMsg=="\x1b\x5b\x42":#Key_Down
+        elif self.keyPressMsg=="\x1b\x5b\x42":           #Key_Down
+            #print("Key down, data: %s"%data)
             if data == "\x08":
                 myBottomMsg=self.toPlainText()
                 msgNum=self.document().lineCount()
@@ -429,9 +448,11 @@ class myTerminal(QTextEdit):
                     plainMsg+=">>> "
                     self.setPlainText(plainMsg)
             else:
+                #print("insert data: %s"%data)
                 self.ui.cursor.insertText(data)
         else:
             if not self.ui.cursor.atEnd():
+                #print("cursor not at end")
                 self.recvdata+=data
                 if self.recvdata.find("\x08")>=0 and len(self.recvdata)>1 and self.recvdata[1:].find("\x08")>=0:
                     if self.messycode!=b'':
@@ -455,8 +476,10 @@ class myTerminal(QTextEdit):
                     self.keyPressMsg="\x1b\x5b\x33\x7e"
             else:
                 if data=="\n":
+                    #print("data is lf")
                     data=""
                 try:
+                    #print("Inserting %s"%data)
                     self.insertPlainText(data)
                 except:
                     print('recv unexpected word.')
@@ -670,7 +693,7 @@ class myTreeView(QTreeView):
         elif dirList[1]=="sd":
             pass
         elif dirList[1]=="uPy_lib":
-            self.ui.fileName="%s/opt/uPyCraft/examples/"%rootDirectoryPath+self.ui.fileName
+            self.ui.fileName="%s/.uPyCraft/examples/"%rootDirectoryPath+self.ui.fileName
         elif dirList[1]=="workSpace":
             if self.ui.createWorkSpacePath():
                 self.ui.fileName=self.ui.workspacePath[0:-10]+self.ui.fileName
@@ -819,7 +842,7 @@ class myTreeView(QTreeView):
                     pass
                 elif dirListDrag[1]=="uPy_lib" or dirListDrag[1]=="workSpace":#device外部拖入，需下载
                     if dirListDrag[1]=="uPy_lib":
-                        oldDragFileName="%s/opt/uPyCraft/examples/"%rootDirectoryPath+oldDragFileName
+                        oldDragFileName="%s/.uPyCraft/examples/"%rootDirectoryPath+oldDragFileName
                     elif dirListDrag[1]=="workSpace":
                         oldDragFileName=self.ui.workspacePath[0:-10]+oldDragFileName
                     if str(dirListDrop[-1]).find(".")<0:
@@ -1063,11 +1086,11 @@ class myTabWidget(QTabWidget):
         #self.connect(editor,SIGNAL("linesChanged()"),self.linesChanged)
         #self.connect(editor,SIGNAL("cursorPositionChanged(int,int)"),self.cursorPositionChanged)
         #self.connect(editor,SIGNAL("userListActivated(int,const QString)"),self.userListActivated)
-        editor.sig_textChanged.connect(self.editorTextChange)
-        editor.sig_selectionChanged.connect(self.selectionChanged)
-        editor.sig_linesChanged.connect(self.linesChanged)
-        editor.sig_cursorPositionChanged.connect(self.cursorPositionChanged)
-        editor.sig_userListActivated.connect(self.userListActivated)
+        editor.textChanged.connect(self.editorTextChange)
+        editor.selectionChanged.connect(self.selectionChanged)
+        editor.linesChanged.connect(self.linesChanged)
+        editor.cursorPositionChanged.connect(self.cursorPositionChanged)
+        editor.userListActivated.connect(self.userListActivated)
 
         #self.connect(editor,SIGNAL("SCN_AUTOCSELECTION(const char*,int)"),self.scn_updateui)
 
@@ -1220,11 +1243,11 @@ class myTabWidget(QTabWidget):
 
 class myQsciScintilla(QsciScintilla):
     sig_dragOpenFile = pyqtSignal(str)
-    sig_textChanged = pyqtSignal()
-    sig_selectionChanged = pyqtSignal()
-    sig_linesChanged = pyqtSignal()
-    sig_cursorPositionChanged = pyqtSignal()
-    sig_userListActivated = pyqtSignal()
+    #sig_textChanged = pyqtSignal()
+    #sig_selectionChanged = pyqtSignal()
+    #sig_linesChanged = pyqtSignal()
+    #sig_cursorPositionChanged = pyqtSignal()
+    #sig_userListActivated = pyqtSignal()
     sig_customContextMenuRequested = pyqtSignal('const QPoint&')
 
     def __init__(self,parent=None):
@@ -1248,27 +1271,6 @@ class myQsciScintilla(QsciScintilla):
                 dropOpenFileName=url.toLocalFile()
             # self.emit(SIGNAL("dragOpenFile"),dropOpenFileName)
             self.sig_dragOpenFile.emit(dropOpenFileName)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #app=QApplication(sys.argv)
 #main=myTextEdit()中

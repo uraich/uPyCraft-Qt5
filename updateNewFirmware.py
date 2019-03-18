@@ -3,6 +3,7 @@ import sys
 import serial
 import serial.tools.list_ports
 import time
+import esptool
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -119,7 +120,9 @@ class updateNewFirmware(QDialog):
     def __init__(self,windowname,isAuto=False,parent=None):
         # super(updateNewFirmware,self).__init__(parent)
         super().__init__()
-        
+
+        self.microPythonBinaryEsp32 = '/opt/ucc/micros/esp32/micropython/ports/esp32/build/firmware-combined.bin'
+        self.microPythonBinaryEsp8266 = '/opt/ucc/micros/esp8266/micropython/ports/esp8266/build/firmware-combined.bin'
         self.setWindowFlags(Qt.WindowCloseButtonHint)#HelpButtonHint?
         self.setWindowTitle(windowname)
         self.setWindowIcon(QIcon(':/logo.png'))
@@ -144,7 +147,7 @@ class updateNewFirmware(QDialog):
         self.boardLabel=QLabel(self.tr("board"))
         self.boardComboBox=QComboBox()
         self.boardComboBox.addItems(["esp8266","esp32","TPYBoardV202","TPYBoardV102","microbit","OpenMV_M4","OpenMV_H7"])
-        self.boardComboBox.setCurrentIndex(2)
+        self.boardComboBox.setCurrentIndex(0)
 
         self.burnAddrLabel=QLabel(self.tr("burn_addr"))
         self.burnAddrComboBox=QComboBox()
@@ -212,7 +215,7 @@ class updateNewFirmware(QDialog):
             layout.addWidget(self.okButton,6,0)
             layout.addWidget(self.cancelButton,6,2)
 
-        self.radioUser.setChecked(True)
+        self.radioUPY.setChecked(True)
         self.firmwareName.setEnabled(False)
         self.chooseFirmwareButton.setVisible(False)
 
@@ -242,23 +245,44 @@ class updateNewFirmware(QDialog):
         self.radioUPY.toggled.connect(self.radioUPYChanged)
         self.radioUser.toggled.connect(self.radioUserChanged)
 
-    def radioUPYChanged(self,choosed):
-        if choosed:
+    def radioUPYChanged(self,choosen):
+        if choosen:
+            if self.boardComboBox.currentIndex() == 0:
+                self.microPythonBinaryEsp8266=self.firmwareName.text()
+            elif self.boardComboBox.currentIndex() == 1:
+                self.microPythonBinaryEsp32=self.firmwareName.text()                
             self.firmwareName.clear()
             self.firmwareName.setEnabled(False)
             self.chooseFirmwareButton.setVisible(False)
 
-    def radioUserChanged(self,choosed):
-        if choosed:
+    def radioUserChanged(self,choosen):
+        if choosen:
             self.firmwareName.setEnabled(True)
             self.chooseFirmwareButton.setVisible(True)
+            print("current board index: %d"%self.boardComboBox.currentIndex())
+            if self.boardComboBox.currentIndex() == 0:
+                self.firmwareName.setText(self.microPythonBinaryEsp8266)
+            elif self.boardComboBox.currentIndex() == 1:
+                self.firmwareName.setText(self.microPythonBinaryEsp32)
 
-
+                
     def boardChange(self,item):
         print(self.boardComboBox.currentText())
         if self.boardComboBox.currentText()=="microbit":
             self.eraseComboBox.setCurrentIndex(1)# for erase:0 yes,1 no
             self.eraseComboBox.setEnabled(False)
+        elif self.boardComboBox.currentText()=="esp32":
+            self.burnAddrComboBox.setCurrentIndex(1)
+            self.burnAddrComboBox.setEnabled(True)
+            if self.radioUser.isChecked():
+                self.firmwareName.setText(self.microPythonBinaryEsp32)
+            
+        elif self.boardComboBox.currentText()=="esp8266":
+            self.burnAddrComboBox.setCurrentIndex(0)
+            self.burnAddrComboBox.setEnabled(False)
+            if self.radioUser.isChecked():
+                self.firmwareName.setText(self.microPythonBinaryEsp8266)
+        
         else:
             self.eraseComboBox.setCurrentIndex(0)
             self.eraseComboBox.setEnabled(True)

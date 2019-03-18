@@ -2,6 +2,9 @@
 
 This is my modified version of [uPyCraft](https://github.com/DFRobot/uPyCraft) based on [PyQt5](https://sourceforge.net/projects/pyqt/files/PyQt5/). I started from the version by japei100 found on [uPyCraft_PyQt5](https://github.com/jiapei100/uPyCraft_PyQt5). Unfortunately this version gave me a lot of problems which I try to correct in my new version. I keep his README file intact, explaining the environment required to run the program This has not changed
 
+
+## Attention! This is work in progress and the program is only partly working!
+
 ## Environment
 * Ubuntu 18.04.1
 * Python 3.6.5
