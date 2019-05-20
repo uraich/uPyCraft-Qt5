@@ -22,19 +22,19 @@
     "firmware": {
         "esp32": [
             {
-                "version": "v1.9.1-222-ge3eff2c-dirty on 2017-12-12",
-                "url": "http://download3.dfrobot.com.cn/uPyCraft/mpy-fw-esp32-20171212.bin",
-                "sha256": "1d2eac52b0c4a8be41695688bf62832b47ffa3661cf254793df9fc84b7572179",
-                "size":1557888
+                "version": "v1.10-265-gfd523c53c-dirty on 2019-05-01",
+                "url": "https://github.com/uraich/uPyCraft-Qt5/blob/master/microPythonFirmware/microPython-ESP8266.bin",
+                "sha256": "e4799a47e228aaa7bcae821bcc4313bdfed4383c3ece938a60e6f30ca2f9f718",
+                "size":1168176
             }
 
         ],
         "esp8266": [
             {
-                "version": "v1.9.1-46-g46b849a on 2017-07-21",
-                "url": "http://download3.dfrobot.com.cn/uPyCraft/mpy-fw-esp8266-20170721.bin",
-                "sha256": "5105b587979a185481afecc70824ee2fc2f595f7c0018a768757b98d381e44e9",
-                "size":573736
+                "version": "v1.10-265-gfd523c53c-dirty on 2019-05-01",
+                "url": "https://github.com/uraich/uPyCraft-Qt5/blob/master/microPythonFirmware/microPython-ESP8266.bin",
+                "sha256": "2e92de2f5908064e120b646a6672ccb70fa2e7496cddc30b14cd2845363e7756",
+                "size":620100
             }
         ],
         "microbit":[
