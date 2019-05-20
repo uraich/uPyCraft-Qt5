@@ -22,7 +22,7 @@
     "firmware": {
         "esp32": [
             {
-                "version": "v1.10-265-gfd523c53c-dirty on 2019-05-01",
+                "version": "v1.10-326-g089c9b71d on 2019-05-20",
                 "url": "https://github.com/uraich/uPyCraft-Qt5/blob/master/microPythonFirmware/microPython-ESP8266.bin",
                 "sha256": "e4799a47e228aaa7bcae821bcc4313bdfed4383c3ece938a60e6f30ca2f9f718",
                 "size":1168176
