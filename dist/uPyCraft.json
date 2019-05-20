@@ -57,7 +57,7 @@
     "examples": [
         {
             "version": "v2.0",
-            "url": "http://download3.dfrobot.com.cn/uPyCraft/examples_V2.0.zip",
+            "url": "https://github.com/uraich/uPyCraft-Qt5/blob/master/dist/examples_V2.0.zip",
             "sha256": "86cbf6379e8bc2422e8c0ae2544222c05855ceb9f05888a9e79c913ca9732fe6",
             "size":89243
         }
