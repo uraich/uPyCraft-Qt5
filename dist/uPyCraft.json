@@ -1,0 +1,65 @@
+{
+    "IDE": [
+        {
+            "version": "1.1",
+            "Darwin": {
+                "url": "http://download3.dfrobot.com.cn/uPyCraft/uPyCraft_mac_V1.0.zip",
+                "sha256": "3f9a912be1917dbfed600fcc3701bca7b01aad16be2ebf85084ebd121f3cb2e1",
+				"size":21379149
+            },
+            "Windows": {
+                "url": "http://download3.dfrobot.com.cn/uPyCraft/uPyCraft_V1.1.exe",
+                "sha256": "5f4cf8360583fcb7091dfa999edd7f76b9f4230a3439a5517dec55110bffe5d5",
+                "size":13723012
+            },
+            "Linux":{
+                "url": "https://github.com/uraich/uPyCraft-Qt5/dist/uPyCraft",
+                "sha256": "624e4e7f2ea60385b27d4bc30f92da4e368f2c46d7b227e0903f0a7311fefbc5",
+                "size":69075856
+            }
+        }
+    ],
+    "firmware": {
+        "esp32": [
+            {
+                "version": "v1.9.1-222-ge3eff2c-dirty on 2017-12-12",
+                "url": "http://download3.dfrobot.com.cn/uPyCraft/mpy-fw-esp32-20171212.bin",
+                "sha256": "1d2eac52b0c4a8be41695688bf62832b47ffa3661cf254793df9fc84b7572179",
+                "size":1557888
+            }
+
+        ],
+        "esp8266": [
+            {
+                "version": "v1.9.1-46-g46b849a on 2017-07-21",
+                "url": "http://download3.dfrobot.com.cn/uPyCraft/mpy-fw-esp8266-20170721.bin",
+                "sha256": "5105b587979a185481afecc70824ee2fc2f595f7c0018a768757b98d381e44e9",
+                "size":573736
+            }
+        ],
+        "microbit":[
+            {
+                "version": "micro:bit v1.0-b'7259d5e'-dirty on 2017-9-07",
+                "url": "http://download3.dfrobot.com.cn/uPyCraft/mpy-microbit-20170907.hex",
+                "sha256": "89d3e83d008391639c0dd72cce78c6629d31d3c7ed1cfd0a2be564c54bcbae2c",
+                "size":706800
+            }
+        ],
+		"TPYBoardV202":[
+            {
+                "version": "v1.9.1-46-g46b849a on 2019-01-01",
+                "url": "http://download3.dfrobot.com.cn/uPyCraft/mpy-fw-tpyboardV202-20190101.bin",
+                "sha256": "5a05205d0b39050256de5130a3184fa064ddce8bb3815cea36ec739374124b6f",
+                "size":598432
+            }
+        ]
+    },
+    "examples": [
+        {
+            "version": "v2.0",
+            "url": "http://download3.dfrobot.com.cn/uPyCraft/examples_V2.0.zip",
+            "sha256": "86cbf6379e8bc2422e8c0ae2544222c05855ceb9f05888a9e79c913ca9732fe6",
+            "size":89243
+        }
+    ]
+}
