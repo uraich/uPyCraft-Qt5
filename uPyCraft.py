@@ -2597,7 +2597,7 @@ class MainWidget(QMainWindow):
     def updateFirmware(self,isAuto=False):
         print("update firmware for %s"%self.currentBoard)
         if self.currentBoard=="pyboard" or self.currentBoard=="TPYBoardV102":
-            self.terminal.append("You choose %s,you should reconnect to serial or hardware burnt by yourself!"%self.currentBoard)
+            self.terminal.append("You choose %s,you should reconnect to serial or hardware burn by yourself!"%self.currentBoard)
             self.canNotIdentifyBoard=False
             return
         elif self.currentBoard=="other":
@@ -2724,11 +2724,11 @@ class MainWidget(QMainWindow):
                     return
                 if self.updateBin.boardComboBox.currentText()=="esp8266" or self.updateBin.boardComboBox.currentText()=="esp32":
                     if userFirmwareName[-4:] != ".bin":
-                        self.terminal.append("choosed esp8266 or esp32,firmware must be '.bin' at the end.")
+                        self.terminal.append("choosen esp8266 or esp32,firmware must be '.bin' at the end.")
                         return
                 if self.updateBin.boardComboBox.currentText()=="microbit":
                     if userFirmwareName[-4:] != ".hex":
-                        self.terminal.append("choosed micro:bit,firmware must be '.hex' at the end.")
+                        self.terminal.append("choosen micro:bit,firmware must be '.hex' at the end.")
                         return
                 if self.myserial.ser.isOpen():
                     print("closing serial line")
@@ -2782,7 +2782,7 @@ class MainWidget(QMainWindow):
         self.updateFirmwareBar.downloadEvent(per)
 
     def firmwareAnyUpdate(self,per):
-        print("firmwareAnyUpdate: percentage: %d"%per)
+#        print("firmwareAnyUpdate: percentage: %d"%per)
         if per==-1:
             print("FirmwareAnyUpdate: per == -1 closing")
             self.updateFirmwareBar.close()
@@ -2797,11 +2797,11 @@ class MainWidget(QMainWindow):
             per=100
             self.updateFirmwareBar.updateEvent(per)
             return
-        print("updating progress bar with %d"%per)
+#        print("updating progress bar with %d"%per)
         self.updateFirmwareBar.updateEvent(per)
 
     def firmwareAnyErase(self,per):
-        print("firmwareAnyErase, percentage: %d"%per)
+#        print("firmwareAnyErase, percentage: %d"%per)
         if per==-1:
             print("per == -1 closing")
             self.updateFirmwareBar.close()
@@ -2885,6 +2885,7 @@ class MainWidget(QMainWindow):
         self.updateIdeExample.close()
 
     def updateIdeExampleOk(self):
+        print("updateIdeExampleOk")
         self.updataIDEorExamplesBar=ProgressIDEorExampleBar(self.updateThingWindowName+"...")
         self.updataIDEorExamplesBar.show()
 

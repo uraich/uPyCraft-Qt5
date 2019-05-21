@@ -43,6 +43,7 @@ class myTerminal(QTextEdit):
         #self.setReadOnly(False)
         self.installEventFilter(self)
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.setFont(QFont("Courier New"))
 
         p=QPalette()
         p.setColor(QPalette.Inactive,QPalette.Highlight,QColor(102,184,255))
@@ -142,6 +143,7 @@ class myTerminal(QTextEdit):
     def initRecvdata(self):
         print("initRecvdata")
         self.recvdata=""
+        
     def initMessycode(self):
         print("initMessycode")
         self.messycode=b""
@@ -188,9 +190,9 @@ class myTerminal(QTextEdit):
             self.queue.put("uitouart:::%s"%str(event.text()))
 
     def uiRecvFromUart(self,data):
+        #print("receive from uart: %s"%data)
         if data=="" or data==b'':
             return
-        #print("receive: %s"%data)
         if (type(data) is bytes) and (str(data).find("b'\\xe")>=0):
             print("is bytes")
             self.keyPressMsg="else"
@@ -475,11 +477,23 @@ class myTerminal(QTextEdit):
                 elif self.recvdata=="\x1b\x5b\x4b":
                     self.keyPressMsg="\x1b\x5b\x33\x7e"
             else:
+                #myCursor=self.textCursor()
+                #print("self.ui.cursor pos: %d"%self.ui.cursor.position())
+                #print("cur pos: %d"%myCursor.position())
+                #if data=='\r':
+                    #print("Current cursor position: %d"%myCursor.position())
+                    #if myCursor.movePosition(QTextCursor.StartOfLine):
+                        #print("Cursor position after move: %d"%myCursor.position())
+                        #self.setTextCursor(myCursor)
+                    #else:
+                        #print("Cursor move was not successful")
+                
                 if data=="\n":
                     #print("data is lf")
                     data=""
                 try:
                     #print("Inserting %s"%data)
+                    #myCursor.insertText(data)
                     self.insertPlainText(data)
                 except:
                     print('recv unexpected word.')

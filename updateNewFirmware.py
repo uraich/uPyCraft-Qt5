@@ -121,7 +121,7 @@ class updateNewFirmware(QDialog):
         # super(updateNewFirmware,self).__init__(parent)
         super().__init__()
 
-        self.microPythonBinaryEsp32 = '/opt/ucc/micros/esp32/micropython/ports/esp32/build/firmware-combined.bin'
+        self.microPythonBinaryEsp32 = '/opt/ucc/micros/esp32/micropython/ports/esp32/build/firmware.bin'
         self.microPythonBinaryEsp8266 = '/opt/ucc/micros/esp8266/micropython/ports/esp8266/build/firmware-combined.bin'
         self.setWindowFlags(Qt.WindowCloseButtonHint)#HelpButtonHint?
         self.setWindowTitle(windowname)
