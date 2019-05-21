@@ -13,7 +13,7 @@
                 "size":13723012
             },
             "Linux":{
-                "url": "https://github.com/uraich/uPyCraft-Qt5/dist/uPyCraft",
+                "url": "https://github.com/uraich/uPyCraft-Qt5/raw/master/dist/uPyCraft",
                 "sha256": "624e4e7f2ea60385b27d4bc30f92da4e368f2c46d7b227e0903f0a7311fefbc5",
                 "size":69075856
             }
@@ -23,7 +23,7 @@
         "esp32": [
             {
                 "version": "v1.10-326-g089c9b71d on 2019-05-20",
-                "url": "https://github.com/uraich/uPyCraft-Qt5/blob/master/microPythonFirmware/microPython-ESP8266.bin",
+                "url": "https://github.com/uraich/uPyCraft-Qt5/raw/master/microPythonFirmware/microPython-ESP32.bin",
                 "sha256": "e4799a47e228aaa7bcae821bcc4313bdfed4383c3ece938a60e6f30ca2f9f718",
                 "size":1168176
             }
@@ -32,7 +32,7 @@
         "esp8266": [
             {
                 "version": "v1.10-265-gfd523c53c-dirty on 2019-05-01",
-                "url": "https://github.com/uraich/uPyCraft-Qt5/blob/master/microPythonFirmware/microPython-ESP8266.bin",
+                "url": "https://github.com/uraich/uPyCraft-Qt5/raw/master/microPythonFirmware/microPython-ESP8266.bin",
                 "sha256": "2e92de2f5908064e120b646a6672ccb70fa2e7496cddc30b14cd2845363e7756",
                 "size":620100
             }
@@ -57,7 +57,7 @@
     "examples": [
         {
             "version": "v2.0",
-            "url": "https://github.com/uraich/uPyCraft-Qt5/blob/master/dist/examples_V2.0.zip",
+            "url": "https://github.com/uraich/uPyCraft-Qt5/raw/master/dist/examples_V2.0.zip",
             "sha256": "86cbf6379e8bc2422e8c0ae2544222c05855ceb9f05888a9e79c913ca9732fe6",
             "size":89243
         }
