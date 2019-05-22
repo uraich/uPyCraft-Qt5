@@ -64,6 +64,9 @@ if not os.path.exists("%s/.uPyCraft/download"%rootDirectoryPath):
     os.makedirs("%s/.uPyCraft/download"%rootDirectoryPath)
 if not os.path.exists("%s/.uPyCraft/temp"%rootDirectoryPath):
     os.makedirs("%s/.uPyCraft/temp"%rootDirectoryPath)
+if not os.path.exists("%s/.uPyCraft/workSpace"%rootDirectoryPath):
+    os.makedirs("%s/.uPyCraft/myWorkspace"%rootDirectoryPath) 
+    os.symlink("%s/.uPyCraft/myWorkspace"%rootDirectoryPath,"%s/.uPyCraft/workspace"%rootDirectoryPath)   
 
 EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1,\
                    pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image,\
