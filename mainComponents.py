@@ -636,14 +636,18 @@ class myTreeView(QTreeView):
 
     def slotRightClickMenu(self,point):
         print("slotRightClickMenu")
+        if self.ui.fileName[0:4] == './sd':
+            self.ui.fileName = self.ui.fileName[1:]
         self.rightClickMenu.clear()
         print("self.ui.fileName: %s"%self.ui.fileName)
         if (self.ui.fileName=="." or self.ui.fileName=="/flash") and self.ui.myserial.ser.isOpen():
             self.rightClickMenu.addAction(self.newDir)
         elif (self.ui.fileName=="." or self.ui.fileName=="/flash") and not self.ui.myserial.ser.isOpen():
             pass
-        elif self.ui.fileName=="/sd" or \
+        elif \
              (((sys.platform=="linux" and self.ui.fileName.find(rootDirectoryPath)>=0) or (sys.platform=="win32" and self.ui.fileName.find(":")>=0) or (sys.platform=="darwin" and self.ui.fileName.find(rootDirectoryPath)>=0)) and self.ui.fileName.split("/")[-1]=="uPy_lib"):
+#        elif self.ui.fileName=="/sd" or \
+#             (((sys.platform=="linux" and self.ui.fileName.find(rootDirectoryPath)>=0) or (sys.platform=="win32" and self.ui.fileName.find(":")>=0) or (sys.platform=="darwin" and self.ui.fileName.find(rootDirectoryPath)>=0)) and self.ui.fileName.split("/")[-1]=="uPy_lib"):
             pass
         elif ((sys.platform=="linux" and self.ui.fileName.find(rootDirectoryPath)>=0) or (sys.platform=="win32" and self.ui.fileName.find(":")>=0) or (sys.platform=="darwin" and self.ui.fileName.find(rootDirectoryPath)>=0)) and self.ui.fileName.find("uPy_lib")>0:
             self.rightClickMenu.addAction(self.openFile)
@@ -702,10 +706,7 @@ class myTreeView(QTreeView):
         print(dirList[1])
         if dirList[1]=="device":
             self.ui.fileName=self.ui.fileName[7:]
-            self.ui.fileName=self.ui.rootDir+self.ui.fileName
-            print("self.ui.filename: %s"%self.ui.fileName)
-        elif dirList[1]=="sd":
-            pass
+            print("filename after device: %s"%self.ui.fileName)
         elif dirList[1]=="uPy_lib":
             self.ui.fileName="%s/.uPyCraft/examples/"%rootDirectoryPath+self.ui.fileName
         elif dirList[1]=="workSpace":
@@ -806,9 +807,10 @@ class myTreeView(QTreeView):
                     return
                 oldDragFileName=self.dropDir
                 print("oldDragFileName=%s"%oldDragFileName)
-                if oldDragFileName=="/device" or oldDragFileName=="/sd" or \
+#                if oldDragFileName=="/device" or oldDragFileName=="/sd" or \
+                if oldDragFileName=="/device" or \
                    oldDragFileName=="/uPy_lib" or oldDragFileName=="workSpace":
-                    self.ui.terminal.append("dir device,sd,uPy_lib can't be move.")
+                    self.ui.terminal.append("dir device, uPy_lib can't be moved.")
                     return
                 self.dropDir=""
                 self.getDropDir(index)
@@ -821,8 +823,9 @@ class myTreeView(QTreeView):
                 except Exception:
                     self.ui.terminal.append("drag error")
                     return
-                if purposeFileName=="sd" or purposeFileName=="uPy_lib" or purposeFileName=="workSpace":
-                    self.ui.terminal.append("file can't be move to sd or uPy_lib or workSpace.")
+                if purposeFileName=="uPy_lib" or purposeFileName=="workSpace":
+#                if purposeFileName=="sd" or purposeFileName=="uPy_lib" or purposeFileName=="workSpace":
+                    self.ui.terminal.append("file can't be moved to uPy_lib or workSpace.")
                     return
 
                 if str(oldDragFileName).find(".")<0:
@@ -852,8 +855,8 @@ class myTreeView(QTreeView):
                     newDropFileName=self.ui.rootDir+newDropFileName
 
                     self.ui.uitoctrlQueue.put("dragChangeDir:::%s:::%s"%(oldDragFileName,newDropFileName))
-                elif dirListDrag[1]=="sd":
-                    pass
+#                elif dirListDrag[1]=="sd":
+#                    pass
                 elif dirListDrag[1]=="uPy_lib" or dirListDrag[1]=="workSpace":#device外部拖入，需下载
                     if dirListDrag[1]=="uPy_lib":
                         oldDragFileName="%s/.uPyCraft/examples/"%rootDirectoryPath+oldDragFileName

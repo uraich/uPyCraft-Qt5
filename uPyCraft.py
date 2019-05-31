@@ -284,20 +284,20 @@ class MainWidget(QMainWindow):
         self.tree.doubleClicked.connect(self.slotTreeDoubleClickOpenFile)
 
         self.rootDevice=QStandardItem(QIcon(":/treeMenuClosed.png"),"device")
-        self.rootSD=QStandardItem(QIcon(":/treeMenuClosed.png"),"sd")
+#        self.rootSD=QStandardItem(QIcon(":/treeMenuClosed.png"),"sd")
         self.rootLib=QStandardItem(QIcon(":/treeMenuClosed.png"),"uPy_lib")
         self.workSpace=QStandardItem(QIcon(":/treeMenuClosed.png"),"workSpace")
 
-        model=QStandardItemModel(self.tree)
+        self.model=QStandardItemModel(self.tree)
         #stringlist = [' board']
         #model.setHorizontalHeaderLabels(stringlist)
 
-        model.appendRow(self.rootDevice)
-        model.appendRow(self.rootSD)
-        model.appendRow(self.rootLib)
-        model.appendRow(self.workSpace)
+        self.model.appendRow(self.rootDevice)
+#        model.appendRow(self.rootSD)
+        self.model.appendRow(self.rootLib)
+        self.model.appendRow(self.workSpace)
 
-        self.tree.setModel(model)
+        self.tree.setModel(self.model)
         self.tree.createRightMenu()
 
 
@@ -1598,6 +1598,7 @@ class MainWidget(QMainWindow):
                     self.canNotIdentifyBoard=True
                     self.updateFirmware()
                 return
+            
         self.canNotIdentifyBoard=False
         senddata="import sys\r"
         for i in senddata:
@@ -1725,6 +1726,7 @@ class MainWidget(QMainWindow):
                     self.updateFirmware()
                 return
         self.canNotIdentifyBoard=False
+        
         senddata="import sys\r"
         for i in senddata:
             self.myserial.ser.write(i.encode())
@@ -1769,6 +1771,45 @@ class MainWidget(QMainWindow):
         else:
             self.currentBoard=currentBoard2
 
+        print("importing os")
+        senddata="import os\r"
+        for i in senddata:
+            self.myserial.ser.write(i.encode())
+        startdata=""
+        startTime=time.time()
+        while True:
+            n = self.myserial.ser.inWaiting()
+            if n>0:
+                startdata+=(self.myserial.ser.read(n)).decode('utf-8')
+                if startdata.find(">>> ")>=0:
+                    self.terminal.append(">>> ")
+                    break
+            time.sleep(0.1)
+            endTime=time.time()
+            if endTime-startTime>2:
+                self.myserial.ser.close()
+                self.terminal.append("connect serial timeout")
+                return
+
+        senddata="os.listdir()\r"
+        for i in senddata:
+            self.myserial.ser.write(i.encode())
+        startdata=""
+        startTime=time.time()
+        while True:
+            n = self.myserial.ser.inWaiting()
+            if n>0:
+                startdata+=(self.myserial.ser.read(n)).decode('utf-8')
+                if startdata.find(">>> ")>=0:
+                    self.terminal.append(">>> ")
+                    break
+            time.sleep(0.1)
+            endTime=time.time()
+            if endTime-startTime>2:
+                self.myserial.ser.close()
+                self.terminal.append("connect serial timeout")
+                return
+            
         self.ctrl.start()
         time.sleep(0.005)
         self.uitoctrlQueue.put("clear")
@@ -1798,7 +1839,7 @@ class MainWidget(QMainWindow):
 
         self.serialConnectToolsAction.setVisible(False)
         self.serialCloseToolsAction.setVisible(True)
-
+            
     def slotCloseSerial(self):
         self.comActionGroup.setDisabled(False)  #enable choose serial
         if not self.myserial.ser.isOpen():
@@ -2384,6 +2425,8 @@ class MainWidget(QMainWindow):
                 self.getPCLibFile(itemLib,path+"/"+i)
 
     def createReflushTree(self,item,msg):
+        print("Create reflush tree")
+        print(msg)
         if type(msg) is str:
             itemDevice=QStandardItem(msg)
             item.appendRow(itemDevice)
@@ -2520,7 +2563,13 @@ class MainWidget(QMainWindow):
         elif sys.platform=="darwin" and str(self.fileName).find(rootDirectoryPath)>=0:
             self.deletePCFile(self.fileName)
             return
-
+        if self.fileName == '/sd':
+            noDelMess=QMessageBox.warning(self,"DeleteFile",
+                                          "Cannot delete sdcard",
+                                          QMessageBox.Ok,
+                                          QMessageBox.Ok)
+            return
+        
         deleteText="confirm delete %s?"%str(self.fileName)
 
         button=QMessageBox.question(self,"DeleteFile",
@@ -2556,6 +2605,12 @@ class MainWidget(QMainWindow):
         self.uitoctrlQueue.put("setdefaultprogram:::%s"%self.myDefaultProgram)
 
     def treeRightMenuRename(self):
+        if self.fileName == '/sd':
+            noDelMess=QMessageBox.warning(self,"RenameFile",
+                                          "Cannot rename sdcard",
+                                          QMessageBox.Ok,
+                                          QMessageBox.Ok)
+            return            
         if sys.platform=="linux" and str(self.fileName).find(rootDirectoryPath)>=0:
             self.terminal.append("not in board,no rename")
             return
@@ -2971,13 +3026,14 @@ class MainWidget(QMainWindow):
             self.inDownloadFile=False
         else:
             self.terminal.append(data+"\n")
-
+        
     def reflushTree(self,data):
         if data=="err":
             self.terminal.append("reflush tree error")
             self.inDownloadFile=False
             return
         print("reflushTree=====================%s"%data)
+        
         row=self.rootDevice.rowCount()
         self.rootDevice.removeRows(0,row)
 
@@ -2986,7 +3042,7 @@ class MainWidget(QMainWindow):
             self.inDownloadFile=False
             return
 
-        self.createReflushTree(self.rootDevice,data['.'])
+        self.createReflushTree(self.rootDevice,data['/'])
 
         if self.isDownloadFileAndRun:
             self.isDownloadFileAndRun=False
@@ -3070,6 +3126,7 @@ class MainWidget(QMainWindow):
         self.tabWidget.createNewTab(filename,data,self.lexer)
 
     def deleteBoardFile(self,deletedFile):
+        print("Deleted file: %s"%deletedFile)
         self.terminal.append("delete ok")
         if deletedFile in self.fileitem.list:
             num=0
@@ -3087,15 +3144,21 @@ class MainWidget(QMainWindow):
         oldname = self.fileName
         if self.currentBoard=="esp32":
             if self.fileName==self.rootDir:
-                self.terminal.append("root dir not be change")
+                self.terminal.append("root dir cannot be changed")
+                return
+            if self.fileName=='/sd':
+                self.terminal.append("sdcard dir cannot be changed")
                 return
         elif self.currentBoard=="esp8266":
             if self.fileName==self.rootDir:
-                self.terminal.append("root dir not be change")
+                self.terminal.append("root dir cannot be changed")
+                return
+            if self.fileName=='/sd':
+                self.terminal.append("sdcard dir cannot be changed")
                 return
         elif self.currentBoard=="pyboard":
             if self.fileName==self.rootDir:
-                self.terminal.append("root dir not be change")
+                self.terminal.append("root dir cannot be changed")
                 return
         else:
             print("*********renamecontinue")
@@ -3286,7 +3349,6 @@ class MainWidget(QMainWindow):
 
 
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
     main = MainWidget()
     sys.exit(app.exec_())
